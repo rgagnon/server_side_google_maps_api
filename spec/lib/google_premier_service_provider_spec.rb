@@ -11,7 +11,7 @@ describe ServerSideGoogleMapsApi::Api::GooglePremier do
   end
 
   it "should build the query url for google webservice" do
-    google.send(:query_url, :distancematrix, {:origins => [1, 1], :destinations => [2, 2], :mode => :driving}).should == 'http://maps.googleapis.com/maps/api/geocode/json?channel=google_maps_test&client=gme-test&destinations=2|2&language=en&mode=driving&origins=1|1&sensor=false&signature=z5Av2ADeLYzY62kloUfKWK9m0uc='
+    google.send(:query_url, :distancematrix, {:origins => [1, 1], :destinations => [2, 2], :mode => :driving}).should == 'http://maps.googleapis.com/maps/api/geocode/json?channel=google_maps_test&client=gme-test&destinations=2%7C2&language=en&mode=driving&origins=1%7C1&sensor=false&signature=QJcuqhowL16svz91xhgU1fLSFa4='
   end
 
 end

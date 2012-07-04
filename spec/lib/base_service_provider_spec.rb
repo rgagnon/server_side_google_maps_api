@@ -15,11 +15,11 @@ describe ServerSideGoogleMapsApi::Api::Base do
     end
 
     it "should build the simple query from array arg" do
-      base.send(:hash_to_query, {:test => ['test', 'test1']}).should == "test=test|test1"
+      base.send(:hash_to_query, {:test => ['test', 'test1']}).should == "test=test%7Ctest1"
     end
 
     it "should build the simple query with multiple args" do
-      base.send(:hash_to_query, {:test2 =>['test', 'test3'] ,  :test => ['test', 'test1']}).should == "test2=test|test3&test=test|test1"
+      base.send(:hash_to_query, {:test2 =>['test', 'test3'] ,  :test => ['test', 'test1']}).should == "test2=test%7Ctest3&test=test%7Ctest1"
     end
 
     it "should build args value query from string" do

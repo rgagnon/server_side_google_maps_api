@@ -14,33 +14,68 @@ module ServerSideGoogleMapsApi
   module Api
     class Base
 
+      ##
+      # Query the geocoding API and return a ::Result object.
+      # Returns +nil+ on timeout or error.
+      #
+      def search(service, query)
+
+        # if coordinates given as string, turn into array
+        query = query.split(/\s*,\s*/) if coordinates?(query)
+
+        if query.is_a?(Array)
+          query = query.join(',')
+        end
+
+        results(service, query)
+      end
+
       private # -------------------------------------------------------------
+
+      ##
+      # Object used to make HTTP requests.
+      #
+      def http_client
+        Net::HTTP
+      end
 
       ##
       # ServerSideGoogleMapsApi::Result object or nil on timeout or other error.
       #
-      def results(query, reverse = false)
+      def results(query)
         fail
       end
 
       ##
       # URL to use for querying the geocoding engine.
       #
-      def query_url(query, reverse = false)
+      def query_url(query)
         fail
       end
 
       ##
       # Returns a parsed search result (Ruby hash).
       #
-      def fetch_data(query, reverse = false)
+      def fetch_data(service, query)
         begin
-          parse_raw_data fetch_raw_data(query, reverse)
+          parse_raw_data fetch_raw_data(service, query)
         rescue SocketError => err
           raise_error(err) or warn "Google maps API connection cannot be established."
         rescue TimeoutError => err
           raise_error(err) or warn "Google maps API not responding fast enough " +
-            "(see ServerSideGoogleMapsApi::Configuration.timeout to set limit)."
+                                       "(see ServerSideGoogleMapsApi::Configuration.timeout to set limit)."
+        end
+      end
+
+      ##
+      # Raise exception if configuration specifies it should be raised.
+      # Return false if exception not raised.
+      #
+      def raise_error(error, message = nil)
+        if ServerSideGoogleMapsApi::Configuration.always_raise.include?(error.is_a?(Class) ? error : error.class)
+          raise error, message
+        else
+          false
         end
       end
 
@@ -70,28 +105,18 @@ module ServerSideGoogleMapsApi
       ##
       # Fetches a raw search result (JSON string).
       #
-      def fetch_raw_data(query, reverse = false)
+      def fetch_raw_data(service, query)
         timeout(ServerSideGoogleMapsApi::Configuration.timeout) do
-          url = query_url(query, reverse)
+          url = query_url(service, query)
           uri = URI.parse(url)
-          unless cache and body = cache[url]
-            client = http_client.new(uri.host, uri.port)
-            client.use_ssl = true if ServerSideGoogleMapsApi::Configuration.use_https
-            response = client.get(uri.request_uri)
-            body = response.body
-            if cache and (200..399).include?(response.code.to_i)
-              cache[url] = body
-            end
-          end
-          body
-        end
-      end
 
-      ##
-      # The working Cache object.
-      #
-      def cache
-        ServerSideGoogleMapsApi.cache
+          puts "uri:#{uri}"
+          client = http_client.new(uri.host, uri.port)
+          client.use_ssl = true if ServerSideGoogleMapsApi::Configuration.use_https
+          response = client.get(uri.request_uri)
+          puts "response.body:#{response.body}"
+          body = response.body
+        end
       end
 
       ##
@@ -114,8 +139,8 @@ module ServerSideGoogleMapsApi
       #
       def hash_to_query(hash)
         require 'cgi' unless defined?(CGI) && defined?(CGI.escape)
-        hash.collect{ |p|
-          p[1].nil? ? nil : p.map{ |i| args_value_to_query(i)} * '='
+        hash.collect { |p|
+          p[1].nil? ? nil : p.map { |i| CGI.escape args_value_to_query(i) } * '='
         }.compact.sort * '&'
       end
 

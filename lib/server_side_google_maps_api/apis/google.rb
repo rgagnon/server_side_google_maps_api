@@ -7,10 +7,10 @@ module ServerSideGoogleMapsApi::Api
 
     private # ---------------------------------------------------------------
 
-    def results(query, reverse = false)
-      return [] unless doc = fetch_data(query, reverse)
+    def results(service, query)
+      return [] unless doc = fetch_data(service, query)
       case doc['status']; when "OK" # OK status implies >0 results
-        return doc['results']
+        return doc
       when "OVER_QUERY_LIMIT"
         raise_error(ServerSideGoogleMapsApi::OverQueryLimitError) ||
           warn("Google Geocoding API error: over query limit.")
