@@ -15,7 +15,7 @@ module ServerSideGoogleMapsApi::Api
           :channel => ServerSideGoogleMapsApi::Configuration.api_key[2]
       }.merge!(query).reject { |key, value| value.nil? }
 
-      path = "/maps/api/geocode/json?#{hash_to_query(params)}"
+      path = "/maps/api/#{service}/json?#{hash_to_query(params)}"
       puts "#{protocol}://maps.googleapis.com#{path}&signature=#{sign(path)}"
       "#{protocol}://maps.googleapis.com#{path}&signature=#{sign(path)}"
     end
