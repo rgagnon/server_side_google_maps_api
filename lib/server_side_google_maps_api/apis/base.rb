@@ -110,11 +110,9 @@ module ServerSideGoogleMapsApi
           url = query_url(service, query)
           uri = URI.parse(url)
 
-          puts "uri:#{uri}"
           client = http_client.new(uri.host, uri.port)
           client.use_ssl = true if ServerSideGoogleMapsApi::Configuration.use_https
           response = client.get(uri.request_uri)
-          puts "response.body:#{response.body}"
           body = response.body
         end
       end
