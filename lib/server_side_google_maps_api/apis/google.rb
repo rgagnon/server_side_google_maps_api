@@ -1,6 +1,7 @@
 require 'server_side_google_maps_api/apis/base'
 require "server_side_google_maps_api/apis/google"
 require 'server_side_google_maps_api/configuration'
+require 'geocoder/exceptions'
 
 module ServerSideGoogleMapsApi::Api
   class Google < Base
@@ -12,7 +13,7 @@ module ServerSideGoogleMapsApi::Api
       case doc['status']; when "OK" # OK status implies >0 results
         return doc
       when "OVER_QUERY_LIMIT"
-        raise_error(ServerSideGoogleMapsApi::OverQueryLimitError) ||
+        raise_error(Geocoder::OverQueryLimitError) ||
           warn("Google Geocoding API error: over query limit.")
       when "REQUEST_DENIED"
         warn "Google Geocoding API error: request denied."
